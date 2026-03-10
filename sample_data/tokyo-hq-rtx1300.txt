@@ -1,0 +1,176 @@
+# RTX1300 Rev.23.01.02 (Thu Jan 10 08:00:00 2025)
+# MAC Address : 00:a0:de:ff:aa:00, 00:a0:de:ff:aa:01, 00:a0:de:ff:aa:02, 00:a0:de:ff:aa:03
+# Memory 1024Mbytes, 4LAN, 1BRI, 1SFP+
+# main:  RTX1300 ver=00 serial=S7M100008 MAC-Address=00:a0:de:ff:aa:00 MAC-Address=00:a0:de:ff:aa:01 MAC-Address=00:a0:de:ff:aa:02 MAC-Address=00:a0:de:ff:aa:03
+# Reporting Date: Mar 10 10:30:00 2026
+login password *
+administrator password *
+console character ascii
+ip route default gateway 198.51.100.1
+ip route 192.168.10.0/24 gateway tunnel 1
+ip route 192.168.20.0/24 gateway tunnel 2
+ip route 192.168.30.0/24 gateway tunnel 3
+ip route 192.168.40.0/24 gateway tunnel 4
+ip route 192.168.50.0/24 gateway tunnel 5
+ip route 10.10.1.0/24 gateway tunnel 6
+ip route 10.100.0.0/16 gateway tunnel 7
+ip route 172.16.0.0/12 gateway tunnel 8
+ip lan1 address 192.168.1.1/24
+ip lan1 description "Main Office LAN"
+ip lan2 address 192.168.2.1/24
+ip lan2 description "Development VLAN"
+ip lan3 address 192.168.3.1/24
+ip lan3 description "Guest WiFi VLAN"
+ip lan4 address 198.51.100.10/28
+ip lan4 nat descriptor 1
+ip lan4 description "Primary WAN - NTT Flets"
+tunnel select 1
+ tunnel name OSAKA-BRANCH
+ description tunnel Osaka Branch Office
+ ipsec tunnel 1
+  ipsec sa policy 1 1 esp aes256-gcm-16
+  ipsec ike always-on 1 on
+  ipsec ike duration ipsec-sa 1 3600
+  ipsec ike duration isakmp-sa 1 28800
+  ipsec ike encryption 1 aes256-cbc
+  ipsec ike group 1 modp3072
+  ipsec ike hash 1 sha384
+  ipsec ike keepalive log 1 on
+  ipsec ike keepalive use 1 on heartbeat 10 3
+  ipsec ike local address 1 192.168.1.1
+  ipsec ike pfs 1 on
+  ipsec ike pre-shared-key 1 text ********
+  ipsec ike remote address 1 198.51.100.100
+  ipsec ike version 1 2
+  ipsec auto refresh 1 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 1
+tunnel select 2
+ tunnel name NAGOYA-BRANCH
+ description tunnel Nagoya Branch Office
+ ipsec tunnel 2
+  ipsec sa policy 2 2 esp aes256-gcm-16
+  ipsec ike always-on 2 on
+  ipsec ike encryption 2 aes256-cbc
+  ipsec ike group 2 modp3072
+  ipsec ike hash 2 sha384
+  ipsec ike keepalive use 2 on heartbeat
+  ipsec ike local address 2 192.168.1.1
+  ipsec ike pfs 2 on
+  ipsec ike pre-shared-key 2 text ********
+  ipsec ike remote address 2 192.0.2.20
+  ipsec ike version 2 2
+  ipsec auto refresh 2 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 2
+tunnel select 3
+ tunnel name FUKUOKA-BRANCH
+ description tunnel Fukuoka Branch Office
+ ipsec tunnel 3
+  ipsec sa policy 3 3 esp aes256-gcm-16
+  ipsec ike always-on 3 on
+  ipsec ike encryption 3 aes256-cbc
+  ipsec ike keepalive use 3 on heartbeat
+  ipsec ike local address 3 192.168.1.1
+  ipsec ike pre-shared-key 3 text ********
+  ipsec ike remote address 3 192.0.2.30
+  ipsec ike version 3 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 3
+tunnel select 4
+ tunnel name SAPPORO-BRANCH
+ description tunnel Sapporo Branch Office
+ ipsec tunnel 4
+  ipsec sa policy 4 4 esp aes256-gcm-16
+  ipsec ike always-on 4 on
+  ipsec ike keepalive use 4 on heartbeat
+  ipsec ike local address 4 192.168.1.1
+  ipsec ike pre-shared-key 4 text ********
+  ipsec ike remote address 4 192.0.2.40
+  ipsec ike version 4 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 4
+tunnel select 5
+ tunnel name SENDAI-BRANCH
+ description tunnel Sendai Branch Office
+ ipsec tunnel 5
+  ipsec sa policy 5 5 esp aes256-gcm-16
+  ipsec ike always-on 5 on
+  ipsec ike keepalive use 5 on heartbeat
+  ipsec ike local address 5 192.168.1.1
+  ipsec ike pre-shared-key 5 text ********
+  ipsec ike remote address 5 198.51.100.102
+  ipsec ike version 5 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 5
+tunnel select 6
+ tunnel name OSAKA-DATACENTER
+ description tunnel Osaka Datacenter Primary
+ ipsec tunnel 6
+  ipsec sa policy 6 6 esp aes256-gcm-16
+  ipsec ike always-on 6 on
+  ipsec ike keepalive log 6 on
+  ipsec ike keepalive use 6 on heartbeat
+  ipsec ike local address 6 192.168.1.1
+  ipsec ike pre-shared-key 6 text ********
+  ipsec ike remote address 6 203.0.113.100
+  ipsec ike version 6 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 6
+tunnel select 7
+ tunnel name AWS-VPC-PROD
+ description tunnel AWS Production VPC Tokyo Region
+ ipsec tunnel 7
+  ipsec sa policy 7 7 esp aes256-gcm-16
+  ipsec ike always-on 7 on
+  ipsec ike keepalive use 7 on heartbeat
+  ipsec ike local address 7 192.168.1.1
+  ipsec ike pre-shared-key 7 text ********
+  ipsec ike remote address 7 52.194.50.100
+  ipsec ike version 7 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 7
+tunnel select 8
+ tunnel name GCP-VPC-DEV
+ description tunnel Google Cloud Development VPC
+ ipsec tunnel 8
+  ipsec sa policy 8 8 esp aes256-gcm-16
+  ipsec ike always-on 8 on
+  ipsec ike keepalive use 8 on heartbeat
+  ipsec ike local address 8 192.168.1.1
+  ipsec ike pre-shared-key 8 text ********
+  ipsec ike remote address 8 35.187.100.50
+  ipsec ike version 8 2
+ ip tunnel tcp mss limit auto
+ tunnel enable 8
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 primary
+nat descriptor address inner 1 192.168.1.1-192.168.3.254
+nat descriptor masquerade incoming 1 reject
+nat descriptor masquerade static 1 1 192.168.1.1 esp
+nat descriptor masquerade static 1 2 192.168.1.1 udp 500
+nat descriptor masquerade static 1 3 192.168.1.1 udp 4500
+nat descriptor masquerade static 1 4 192.168.1.100 tcp 443
+nat descriptor masquerade static 1 5 192.168.1.101 tcp 22
+nat descriptor masquerade static 1 6 192.168.1.102 tcp 3389
+nat descriptor masquerade static 1 7 192.168.1.103 tcp 80
+nat descriptor masquerade static 1 8 192.168.1.103 tcp 443
+ipsec use on
+ipsec auto refresh on
+dhcp service server
+dhcp scope 1 192.168.1.100-192.168.1.200/24 gateway 192.168.1.1
+dhcp scope 2 192.168.2.100-192.168.2.200/24 gateway 192.168.2.1
+dhcp scope 3 192.168.3.100-192.168.3.200/24 gateway 192.168.3.1
+dns server 192.168.1.10 8.8.8.8 8.8.4.4
+dns private address spoof on
+httpd host lan1
+telnetd host none
+sshd host lan1 lan2
+sshd service on
+syslog host 192.168.1.20
+syslog notice on
+syslog debug on
+snmp community read-only public
+snmp community read-write private
+schedule at 1 */* 03:00 * ntpdate ntp.nict.jp
+schedule at 2 */* 04:00 * save

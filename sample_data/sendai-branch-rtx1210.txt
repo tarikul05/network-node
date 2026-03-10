@@ -1,0 +1,91 @@
+# RTX1210 Rev.14.01.42 (Wed Nov 25 15:30:00 2024)
+# MAC Address : 00:a0:de:ee:11:00, 00:a0:de:ee:11:01, 00:a0:de:ee:11:02
+# Memory 256Mbytes, 3LAN, 1BRI
+# main:  RTX1210 ver=00 serial=S5R200007 MAC-Address=00:a0:de:ee:11:00 MAC-Address=00:a0:de:ee:11:01 MAC-Address=00:a0:de:ee:11:02
+# Reporting Date: Mar 10 10:00:00 2026
+login password *
+administrator password *
+console character ascii
+ip route default gateway 198.51.100.97
+ip route 192.168.1.0/24 gateway tunnel 1
+ip route 192.168.10.0/24 gateway tunnel 2
+ip route 192.168.30.0/24 gateway tunnel 3
+ip route 10.10.1.0/24 gateway tunnel 4
+ip lan1 address 192.168.50.1/24
+ip lan1 description "Sendai Office LAN"
+ip lan2 address 198.51.100.102/28
+ip lan2 nat descriptor 1
+ip lan2 description "WAN Interface - IIJ"
+tunnel select 1
+ tunnel name TOKYO-HQ-MAIN
+ description tunnel Tokyo Headquarters Main
+ ipsec tunnel 1
+  ipsec sa policy 1 1 esp aes256-cbc sha256-hmac
+  ipsec ike always-on 1 on
+  ipsec ike duration ipsec-sa 1 3600
+  ipsec ike encryption 1 aes256-cbc
+  ipsec ike group 1 modp2048
+  ipsec ike hash 1 sha256
+  ipsec ike keepalive use 1 on heartbeat
+  ipsec ike local address 1 192.168.50.1
+  ipsec ike pfs 1 on
+  ipsec ike pre-shared-key 1 text ********
+  ipsec ike remote address 1 203.0.113.10
+  ipsec auto refresh 1 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 1
+tunnel select 2
+ tunnel name OSAKA-BRANCH
+ description tunnel Osaka Branch Connection
+ ipsec tunnel 2
+  ipsec sa policy 2 2 esp aes256-cbc sha256-hmac
+  ipsec ike always-on 2 on
+  ipsec ike encryption 2 aes256-cbc
+  ipsec ike keepalive use 2 on heartbeat
+  ipsec ike local address 2 192.168.50.1
+  ipsec ike pre-shared-key 2 text ********
+  ipsec ike remote address 2 198.51.100.10
+  ipsec auto refresh 2 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 2
+tunnel select 3
+ tunnel name FUKUOKA-BRANCH
+ description tunnel Fukuoka Branch Link
+ ipsec tunnel 3
+  ipsec sa policy 3 3 esp aes256-cbc sha256-hmac
+  ipsec ike always-on 3 on
+  ipsec ike encryption 3 aes256-cbc
+  ipsec ike keepalive use 3 on heartbeat
+  ipsec ike local address 3 192.168.50.1
+  ipsec ike pre-shared-key 3 text ********
+  ipsec ike remote address 3 192.0.2.30
+  ipsec auto refresh 3 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 3
+tunnel select 4
+ tunnel name OSAKA-DATACENTER
+ description tunnel Osaka Datacenter DR
+ ipsec tunnel 4
+  ipsec sa policy 4 4 esp aes256-cbc sha256-hmac
+  ipsec ike always-on 4 on
+  ipsec ike keepalive use 4 on heartbeat
+  ipsec ike local address 4 192.168.50.1
+  ipsec ike pre-shared-key 4 text ********
+  ipsec ike remote address 4 203.0.113.100
+ ip tunnel tcp mss limit auto
+ tunnel enable 4
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 primary
+nat descriptor address inner 1 192.168.50.1-192.168.50.254
+nat descriptor masquerade incoming 1 reject
+nat descriptor masquerade static 1 1 192.168.50.1 esp
+nat descriptor masquerade static 1 2 192.168.50.1 udp 500
+nat descriptor masquerade static 1 3 192.168.50.1 udp 4500
+ipsec use on
+ipsec auto refresh on
+dhcp service server
+dhcp scope 1 192.168.50.100-192.168.50.200/24 gateway 192.168.50.1
+dns server 192.168.1.10 8.8.8.8
+dns private address spoof on
+httpd host lan1
+syslog host 192.168.1.20

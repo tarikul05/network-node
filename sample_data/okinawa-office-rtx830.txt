@@ -1,0 +1,38 @@
+# RTX830 Rev.15.02.28 (Fri Dec 20 09:00:00 2024)
+# MAC Address : 00:a0:de:dd:33:00, 00:a0:de:dd:33:01, 00:a0:de:dd:33:02
+# Memory 256Mbytes, 3LAN, 1BRI
+# main:  RTX830 ver=00 serial=S5M200013 MAC-Address=00:a0:de:dd:33:00 MAC-Address=00:a0:de:dd:33:01 MAC-Address=00:a0:de:dd:33:02
+# Reporting Date: Mar 10 12:00:00 2026
+login password *
+administrator password *
+console character ascii
+ip route default gateway 192.0.2.129
+ip route 192.168.1.0/24 gateway tunnel 1
+ip lan1 address 192.168.100.1/24
+ip lan1 description "Okinawa Sales Office"
+ip lan2 address 192.0.2.132/28
+ip lan2 nat descriptor 1
+ip lan2 description "WAN - OCN Business"
+tunnel select 1
+ tunnel name TOKYO-HQ
+ description tunnel Tokyo HQ Remote Access
+ ipsec tunnel 1
+  ipsec sa policy 1 1 esp aes256-cbc sha256-hmac
+  ipsec ike always-on 1 on
+  ipsec ike encryption 1 aes256-cbc
+  ipsec ike keepalive use 1 on heartbeat
+  ipsec ike local address 1 192.168.100.1
+  ipsec ike pre-shared-key 1 text ********
+  ipsec ike remote address 1 198.51.100.10
+  ipsec auto refresh 1 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 1
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 primary
+nat descriptor address inner 1 192.168.100.1-192.168.100.254
+ipsec use on
+ipsec auto refresh on
+dhcp service server
+dhcp scope 1 192.168.100.100-192.168.100.200/24 gateway 192.168.100.1
+dns server 8.8.8.8 8.8.4.4
+httpd host lan1

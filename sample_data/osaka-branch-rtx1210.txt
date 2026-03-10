@@ -1,0 +1,73 @@
+# RTX1210 Rev.14.01.35 (Wed Mar 15 10:22:18 2023)
+# MAC Address : 00:a0:de:bb:22:00, 00:a0:de:bb:22:01, 00:a0:de:bb:22:02
+# Memory 256Mbytes, 3LAN, 1BRI
+# main:  RTX1210 ver=00 serial=S4H100002 MAC-Address=00:a0:de:bb:22:00 MAC-Address=00:a0:de:bb:22:01 MAC-Address=00:a0:de:bb:22:02
+# Reporting Date: Mar 10 09:15:00 2026
+login password *
+administrator password *
+console character ascii
+ip route default gateway 198.51.100.1
+ip route 192.168.1.0/24 gateway tunnel 1
+ip route 192.168.20.0/24 gateway tunnel 2
+ip route 10.10.0.0/16 gateway tunnel 3
+ip lan1 address 192.168.10.1/24
+ip lan2 address 198.51.100.10/28
+ip lan2 nat descriptor 1
+tunnel select 1
+ tunnel name TOKYO-HQ
+ description tunnel Tokyo Headquarters VPN
+ ipsec tunnel 1
+  ipsec sa policy 1 1 esp aes-cbc sha-hmac
+  ipsec ike always-on 1 on
+  ipsec ike duration ipsec-sa 1 3600
+  ipsec ike duration isakmp-sa 1 28800
+  ipsec ike encryption 1 aes-cbc
+  ipsec ike group 1 modp1024
+  ipsec ike hash 1 sha
+  ipsec ike keepalive log 1 on
+  ipsec ike keepalive use 1 on heartbeat
+  ipsec ike local address 1 192.168.10.1
+  ipsec ike pfs 1 on
+  ipsec ike pre-shared-key 1 text ********
+  ipsec ike remote address 1 203.0.113.10
+  ipsec auto refresh 1 on
+ ip tunnel tcp mss limit auto
+ tunnel enable 1
+tunnel select 2
+ tunnel name NAGOYA-BRANCH
+ description tunnel Nagoya Branch Direct Link
+ ipsec tunnel 2
+  ipsec sa policy 2 2 esp aes-cbc sha-hmac
+  ipsec ike always-on 2 on
+  ipsec ike keepalive use 2 on heartbeat
+  ipsec ike local address 2 192.168.10.1
+  ipsec ike pre-shared-key 2 text ********
+  ipsec ike remote address 2 198.51.100.20
+ ip tunnel tcp mss limit auto
+ tunnel enable 2
+tunnel select 3
+ tunnel name OSAKA-DATACENTER
+ description tunnel Osaka DC Backup Link
+ ipsec tunnel 3
+  ipsec sa policy 3 3 esp aes256-cbc sha-hmac
+  ipsec ike keepalive use 3 on heartbeat
+  ipsec ike local address 3 192.168.10.1
+  ipsec ike pre-shared-key 3 text ********
+  ipsec ike remote address 3 203.0.113.100
+ ip tunnel tcp mss limit auto
+ tunnel enable 3
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 primary
+nat descriptor address inner 1 192.168.10.1-192.168.10.254
+nat descriptor masquerade incoming 1 reject
+nat descriptor masquerade static 1 1 192.168.10.1 esp
+nat descriptor masquerade static 1 2 192.168.10.1 udp 500
+nat descriptor masquerade static 1 3 192.168.10.1 udp 4500
+ipsec use on
+ipsec auto refresh on
+dhcp service server
+dhcp scope 1 192.168.10.100-192.168.10.200/24 gateway 192.168.10.1
+dns server 8.8.8.8 1.1.1.1
+dns private address spoof on
+httpd host any
+syslog notice on

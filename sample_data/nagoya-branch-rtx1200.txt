@@ -1,0 +1,63 @@
+# RTX1200 Rev.10.01.78 (Thu Oct 12 14:30:00 2020)
+# MAC Address : 00:a0:de:cc:33:00, 00:a0:de:cc:33:01
+# Memory 128Mbytes, 3LAN, 1BRI
+# main:  RTX1200 ver=00 serial=S3N200003 MAC-Address=00:a0:de:cc:33:00 MAC-Address=00:a0:de:cc:33:01
+# Reporting Date: Mar 10 09:20:00 2026
+login password *
+administrator password *
+ip route default gateway 198.51.100.17
+ip route 192.168.1.0/24 gateway tunnel 1
+ip route 192.168.10.0/24 gateway tunnel 2
+ip route 192.168.30.0/24 gateway tunnel 3
+ip lan1 address 192.168.20.1/24
+ip lan2 address 198.51.100.20/28
+ip lan2 nat descriptor 1
+tunnel select 1
+ tunnel name TOKYO-HQ
+ description tunnel Tokyo HQ Main Link
+ ipsec tunnel 1
+  ipsec sa policy 1 1 esp aes-cbc sha-hmac
+  ipsec ike always-on 1 on
+  ipsec ike encryption 1 aes-cbc
+  ipsec ike keepalive use 1 on heartbeat
+  ipsec ike local address 1 192.168.20.1
+  ipsec ike pre-shared-key 1 text ********
+  ipsec ike remote address 1 203.0.113.10
+ ip tunnel tcp mss limit auto
+ tunnel enable 1
+tunnel select 2
+ tunnel name OSAKA-BRANCH
+ description tunnel Osaka Branch Direct
+ ipsec tunnel 2
+  ipsec sa policy 2 2 esp aes-cbc sha-hmac
+  ipsec ike always-on 2 on
+  ipsec ike keepalive use 2 on heartbeat
+  ipsec ike local address 2 192.168.20.1
+  ipsec ike pre-shared-key 2 text ********
+  ipsec ike remote address 2 198.51.100.10
+ ip tunnel tcp mss limit auto
+ tunnel enable 2
+tunnel select 3
+ tunnel name FUKUOKA-BRANCH
+ description tunnel Fukuoka Branch Link
+ ipsec tunnel 3
+  ipsec sa policy 3 3 esp aes-cbc sha-hmac
+  ipsec ike keepalive use 3 on heartbeat
+  ipsec ike local address 3 192.168.20.1
+  ipsec ike pre-shared-key 3 text ********
+  ipsec ike remote address 3 198.51.100.30
+ ip tunnel tcp mss limit auto
+ tunnel enable 3
+nat descriptor type 1 masquerade
+nat descriptor address outer 1 primary
+nat descriptor address inner 1 192.168.20.1-192.168.20.254
+nat descriptor masquerade incoming 1 reject
+nat descriptor masquerade static 1 1 192.168.20.1 esp
+nat descriptor masquerade static 1 2 192.168.20.1 udp 500
+ipsec use on
+ipsec auto refresh on
+dhcp service server
+dhcp scope 1 192.168.20.100-192.168.20.200/24 gateway 192.168.20.1
+dns server 8.8.8.8
+dns private address spoof on
+httpd host any
