@@ -32,8 +32,25 @@ export interface NetworkNodeData {
 export interface SiteGroupNodeData {
   siteId: string;
   siteName: string;
+  siteNameJa?: string;
   routerCount: number;
   collapsed: boolean;
+  tier: 'core' | 'regional' | 'branch';
+  location?: string;
+}
+
+export interface CloudNodeData {
+  title: string;
+  description?: string;
+  type: 'aws' | 'azure' | 'gcp' | 'salesforce' | 'datacenter' | 'isp' | 'generic';
+  ipAddress?: string;
+}
+
+export interface NetworkLabelNodeData {
+  network: string;
+  cidr?: number;
+  label?: string;
+  type: 'lan' | 'wan' | 'dmz' | 'management';
 }
 
 // Custom node types
@@ -42,13 +59,17 @@ export type RemoteRouterNode = Node<RemoteRouterNodeData, 'remoteRouter'>;
 export type InternetNode = Node<InternetNodeData, 'internet'>;
 export type NetworkNode = Node<NetworkNodeData, 'network'>;
 export type SiteGroupNode = Node<SiteGroupNodeData, 'siteGroup'>;
+export type CloudNode = Node<CloudNodeData, 'cloud'>;
+export type NetworkLabelNode = Node<NetworkLabelNodeData, 'networkLabel'>;
 
 export type TopologyNode = 
   | RouterNode 
   | RemoteRouterNode 
   | InternetNode 
   | NetworkNode 
-  | SiteGroupNode;
+  | SiteGroupNode
+  | CloudNode
+  | NetworkLabelNode;
 
 // Custom edge data types
 export interface TunnelEdgeData {
@@ -72,15 +93,44 @@ export interface LanEdgeData {
   cidr: number;
 }
 
+export interface BackboneEdgeData {
+  label?: string;
+  bandwidth?: string;
+  isRedundant?: boolean;
+}
+
+export interface VpnEdgeData {
+  tunnelName?: string;
+  localIp?: string;
+  remoteIp?: string;
+  encryption?: string;
+  enabled?: boolean;
+}
+
+export interface InternetEdgeData {
+  publicIp?: string;
+  isp?: string;
+  type?: 'fiber' | 'dsl' | 'cable' | 'wireless' | 'leased';
+}
+
 // Custom edge types
 export type TunnelEdge = Edge<TunnelEdgeData>;
 export type WanEdge = Edge<WanEdgeData>;
 export type LanEdge = Edge<LanEdgeData>;
+export type BackboneEdge = Edge<BackboneEdgeData>;
+export type VpnEdge = Edge<VpnEdgeData>;
+export type InternetEdge = Edge<InternetEdgeData>;
 
-export type TopologyEdge = TunnelEdge | WanEdge | LanEdge;
+export type TopologyEdge = 
+  | TunnelEdge 
+  | WanEdge 
+  | LanEdge 
+  | BackboneEdge 
+  | VpnEdge 
+  | InternetEdge;
 
 // Layout types
-export type LayoutType = 'hierarchical' | 'radial' | 'force' | 'manual';
+export type LayoutType = 'tier' | 'hierarchical' | 'radial' | 'force' | 'manual';
 
 export interface LayoutOptions {
   type: LayoutType;

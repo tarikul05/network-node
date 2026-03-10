@@ -16,7 +16,10 @@ import 'reactflow/dist/style.css';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import { useTopologyStore, useUIStore } from '@/store';
-import { generateTopology, applyHierarchicalLayout } from '@/lib/topology/generator';
+import { generateTopology, applyTierLayout } from '@/lib/topology/generator';
+
+// Design spec colors
+const CANVAS_BG = '#0a3a5f';
 
 export function TopologyCanvas() {
   const { routers, unknownPeers } = useTopologyStore();
@@ -29,7 +32,7 @@ export function TopologyCanvas() {
     }
     
     const { nodes, edges } = generateTopology(routers);
-    const layoutedNodes = applyHierarchicalLayout(nodes, edges);
+    const layoutedNodes = applyTierLayout(nodes, edges);
     
     return { initialNodes: layoutedNodes, initialEdges: edges };
   }, [routers]);
@@ -61,11 +64,14 @@ export function TopologyCanvas() {
   // Empty state
   if (routers.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
+      <div 
+        className="h-full flex items-center justify-center"
+        style={{ backgroundColor: CANVAS_BG }}
+      >
         <div className="text-center">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center">
             <svg
-              className="w-12 h-12 text-gray-400"
+              className="w-12 h-12 text-white/50"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -78,8 +84,8 @@ export function TopologyCanvas() {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900">No topology yet</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="text-lg font-medium text-white">No topology yet</h3>
+          <p className="mt-1 text-sm text-white/60">
             Upload router configuration files to visualize your network
           </p>
         </div>
@@ -88,7 +94,7 @@ export function TopologyCanvas() {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full" style={{ backgroundColor: CANVAS_BG }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -108,9 +114,11 @@ export function TopologyCanvas() {
         minZoom={0.1}
         maxZoom={2}
         attributionPosition="bottom-left"
+        style={{ backgroundColor: CANVAS_BG }}
+        onlyRenderVisibleElements
       >
         {showGrid && (
-          <Background color="#e5e7eb" gap={20} size={1} />
+          <Background color="rgba(255,255,255,0.1)" gap={20} size={1} />
         )}
         <Controls />
         {showMinimap && (
@@ -118,18 +126,22 @@ export function TopologyCanvas() {
             nodeColor={(node) => {
               switch (node.type) {
                 case 'router':
-                  return '#3b82f6';
+                  return '#f2c94c';
                 case 'remoteRouter':
                   return '#9ca3af';
                 case 'internet':
-                  return '#0ea5e9';
+                case 'cloud':
+                  return '#8b5cf6';
                 case 'network':
                   return '#22c55e';
+                case 'site':
+                  return '#1e88c8';
                 default:
                   return '#6b7280';
               }
             }}
-            maskColor="rgba(0, 0, 0, 0.1)"
+            maskColor="rgba(10, 58, 95, 0.8)"
+            style={{ backgroundColor: '#0a3a5f' }}
           />
         )}
       </ReactFlow>

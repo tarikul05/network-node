@@ -20,6 +20,36 @@ interface GeneratedTopology {
   unknownPeers: UnknownPeer[];
 }
 
+// Tier-based layout configuration per rectflow.md spec
+interface TierLayoutConfig {
+  cloudY: number;      // Tier 1: Cloud Services
+  coreY: number;       // Tier 2: Core Datacenter  
+  hqY: number;         // Tier 3: HQ Core Network
+  regionalY: number;   // Tier 4: Regional Sites
+  branchY: number;     // Tier 5: Branch Sites
+  networkY: number;    // LAN networks below routers
+  nodeSpacingX: number;
+  startX: number;
+}
+
+const TIER_LAYOUT: TierLayoutConfig = {
+  cloudY: 0,
+  coreY: 200,
+  hqY: 400,
+  regionalY: 650,
+  branchY: 900,
+  networkY: 1100,
+  nodeSpacingX: 200,
+  startX: 100,
+};
+
+// Node size constants per rectflow.md spec
+const NODE_SIZES = {
+  router: { width: 160, height: 90 },
+  cloud: { width: 240, height: 120 },
+  site: { width: 300, height: 160 },
+};
+
 interface LayoutConfig {
   startX: number;
   startY: number;
@@ -30,7 +60,7 @@ interface LayoutConfig {
 const DEFAULT_LAYOUT: LayoutConfig = {
   startX: 400,
   startY: 100,
-  nodeSpacingX: 300,
+  nodeSpacingX: 200,
   nodeSpacingY: 200,
 };
 
@@ -328,53 +358,125 @@ function createLanEdge(
 }
 
 /**
- * Apply hierarchical layout to nodes
+ * Apply hierarchical layout to nodes (legacy)
  */
 export function applyHierarchicalLayout(nodes: Node[], edges: Edge[]): Node[] {
-  // Simple hierarchical layout
-  const levels: Map<string, number> = new Map();
+  return applyTierLayout(nodes, edges);
+}
+
+/**
+ * Apply tier-based layout per rectflow.md specification
+ * 
+ * Tier 1 (y=0)    - Cloud Services (AWS, Azure, GCP, ISP)
+ * Tier 2 (y=200)  - Core Datacenter
+ * Tier 3 (y=400)  - HQ Core Network  
+ * Tier 4 (y=650)  - Regional Sites
+ * Tier 5 (y=900)  - Branch Sites
+ * Tier 6 (y=1100) - LAN Networks
+ */
+export function applyTierLayout(nodes: Node[], edges: Edge[]): Node[] {
+  // Categorize nodes
+  const cloudNodes = nodes.filter(n => n.type === 'internet' || n.type === 'cloud');
+  const routerNodes = nodes.filter(n => n.type === 'router');
+  const remoteNodes = nodes.filter(n => n.type === 'remoteRouter');
+  const networkNodes = nodes.filter(n => n.type === 'network');
   
-  // Internet at level 0
-  const internetNode = nodes.find(n => n.type === 'internet');
-  if (internetNode) {
-    levels.set(internetNode.id, 0);
+  // Calculate tunnel counts to determine router importance (HQ vs Branch)
+  const routerTunnelCounts = new Map<string, number>();
+  for (const node of routerNodes) {
+    const routerData = node.data as RouterNodeData;
+    routerTunnelCounts.set(node.id, routerData.router.tunnels.length);
   }
   
-  // Routers at level 1
-  nodes.filter(n => n.type === 'router').forEach((node, i) => {
-    levels.set(node.id, 1);
-    node.position = {
-      x: 100 + (i * 350),
-      y: 200
-    };
+  // Sort routers: more tunnels = more important (HQ/regional)
+  const sortedRouters = [...routerNodes].sort((a, b) => {
+    const countA = routerTunnelCounts.get(a.id) || 0;
+    const countB = routerTunnelCounts.get(b.id) || 0;
+    return countB - countA;
   });
   
-  // Remote routers at level 2
-  nodes.filter(n => n.type === 'remoteRouter').forEach((node, i) => {
-    levels.set(node.id, 2);
-    node.position = {
-      x: 50 + (i * 250),
-      y: 500
-    };
-  });
+  // Assign tiers based on tunnel count
+  const hqRouters: Node[] = [];
+  const regionalRouters: Node[] = [];
+  const branchRouters: Node[] = [];
   
-  // Networks at level 2
-  nodes.filter(n => n.type === 'network').forEach((node, i) => {
-    levels.set(node.id, 2);
-    node.position = {
-      x: 400 + (i * 250),
-      y: 500
-    };
-  });
-  
-  // Center internet node
-  if (internetNode) {
-    const routerNodes = nodes.filter(n => n.type === 'router');
-    if (routerNodes.length > 0) {
-      const avgX = routerNodes.reduce((sum, n) => sum + n.position.x, 0) / routerNodes.length;
-      internetNode.position = { x: avgX, y: 50 };
+  for (const router of sortedRouters) {
+    const tunnelCount = routerTunnelCounts.get(router.id) || 0;
+    if (tunnelCount >= 5) {
+      hqRouters.push(router);
+    } else if (tunnelCount >= 3) {
+      regionalRouters.push(router);
+    } else {
+      branchRouters.push(router);
     }
   }
+  
+  // Position cloud/internet nodes at Tier 1
+  const totalWidth = Math.max(
+    cloudNodes.length,
+    hqRouters.length,
+    regionalRouters.length,
+    branchRouters.length
+  ) * TIER_LAYOUT.nodeSpacingX;
+  
+  cloudNodes.forEach((node, i) => {
+    const rowWidth = cloudNodes.length * TIER_LAYOUT.nodeSpacingX;
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX),
+      y: TIER_LAYOUT.cloudY,
+    };
+  });
+  
+  // Position HQ routers at Tier 3
+  hqRouters.forEach((node, i) => {
+    const rowWidth = hqRouters.length * TIER_LAYOUT.nodeSpacingX;
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX),
+      y: TIER_LAYOUT.hqY,
+    };
+  });
+  
+  // Position regional routers at Tier 4
+  regionalRouters.forEach((node, i) => {
+    const rowWidth = regionalRouters.length * TIER_LAYOUT.nodeSpacingX;
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX),
+      y: TIER_LAYOUT.regionalY,
+    };
+  });
+  
+  // Position branch routers at Tier 5
+  branchRouters.forEach((node, i) => {
+    const rowWidth = branchRouters.length * TIER_LAYOUT.nodeSpacingX;
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX),
+      y: TIER_LAYOUT.branchY,
+    };
+  });
+  
+  // Position remote routers between regional and branch
+  remoteNodes.forEach((node, i) => {
+    const rowWidth = remoteNodes.length * TIER_LAYOUT.nodeSpacingX;
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX + 100;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX * 0.8),
+      y: TIER_LAYOUT.regionalY + 150,
+    };
+  });
+  
+  // Position network nodes at Tier 6
+  networkNodes.forEach((node, i) => {
+    const rowWidth = networkNodes.length * (TIER_LAYOUT.nodeSpacingX * 0.8);
+    const startX = (totalWidth - rowWidth) / 2 + TIER_LAYOUT.startX;
+    node.position = {
+      x: startX + (i * TIER_LAYOUT.nodeSpacingX * 0.8),
+      y: TIER_LAYOUT.networkY,
+    };
+  });
   
   return nodes;
 }

@@ -15,6 +15,15 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+// Design spec colors
+const COLORS = {
+  router: '#f2c94c',      // Yellow router
+  routerDark: '#d4a62a',  // Darker yellow for borders
+  wanIp: '#ff6b6b',       // Red for WAN IP
+  lanNetwork: '#22c55e',  // Green for LAN
+  tunnel: '#f97316',      // Orange for tunnels
+};
+
 function RouterNodeComponent({ data, selected }: NodeProps<RouterNodeData>) {
   const { router, isHighlighted } = data;
   const tunnelCount = router.tunnels.length;
@@ -23,148 +32,89 @@ function RouterNodeComponent({ data, selected }: NodeProps<RouterNodeData>) {
   // Find WAN and LAN interfaces
   const wanInterface = router.interfaces.find(i => i.type === 'wan');
   const lanInterfaces = router.interfaces.filter(i => i.type === 'lan');
+  const primaryLan = lanInterfaces[0];
+  
+  // Get model from firmware
+  const modelMatch = router.firmware?.match(/RTX\d+|NVR\d+|FWX\d+|SRT\d+/i);
+  const model = modelMatch ? modelMatch[0] : 'Router';
   
   return (
     <div
       className={cn(
-        'bg-white rounded-lg shadow-lg border-2 min-w-[280px]',
-        'transition-all duration-200',
-        selected ? 'border-blue-500 shadow-blue-200' : 'border-gray-200',
-        isHighlighted && 'ring-2 ring-yellow-400'
+        'rounded-lg shadow-lg transition-all duration-200',
+        'w-[160px]',
+        selected && 'ring-2 ring-white ring-offset-2 ring-offset-[#0a3a5f]',
+        isHighlighted && 'ring-2 ring-white'
       )}
+      style={{ 
+        backgroundColor: COLORS.router,
+        border: `2px solid ${COLORS.routerDark}`
+      }}
     >
       {/* Top handles for tunnel connections */}
-      {router.tunnels.map((tunnel, i) => (
+      {router.tunnels.slice(0, 5).map((tunnel, i) => (
         <Handle
           key={`tunnel-${tunnel.id}`}
           type="source"
           position={Position.Top}
           id={`tunnel-${tunnel.id}`}
-          className="!bg-orange-500 !w-3 !h-3"
+          className="!w-2.5 !h-2.5 !border-0"
           style={{ 
-            left: `${((i + 1) / (router.tunnels.length + 1)) * 100}%` 
+            left: `${((i + 1) / (Math.min(router.tunnels.length, 5) + 1)) * 100}%`,
+            backgroundColor: COLORS.tunnel
           }}
         />
       ))}
       
       {/* Left handle for WAN */}
-      {wanInterface && (
-        <Handle
-          type="target"
-          position={Position.Left}
-          id="wan"
-          className="!bg-blue-500 !w-3 !h-3"
-        />
-      )}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="wan"
+        className="!w-2.5 !h-2.5 !border-0"
+        style={{ backgroundColor: COLORS.wanIp }}
+      />
       
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Router className="w-5 h-5 text-blue-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">
-              {router.hostname}
-            </h3>
-            {router.serial && (
-              <p className="text-xs text-gray-500">S/N: {router.serial}</p>
-            )}
-          </div>
-        </div>
+      {/* Header - Hostname / Role */}
+      <div className="px-3 py-2 border-b border-yellow-600/30">
+        <h3 className="font-bold text-gray-900 text-sm truncate">
+          {router.hostname}
+        </h3>
       </div>
       
-      {/* Status & Info */}
-      <div className="px-4 py-2 border-b border-gray-100">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Status</span>
-          <span className="flex items-center gap-1 text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            Online
-          </span>
+      {/* Body - Model & LAN */}
+      <div className="px-3 py-2 space-y-1">
+        <div className="text-xs font-medium text-gray-700">
+          {model}
         </div>
-        {router.firmware && (
-          <div className="flex items-center justify-between text-sm mt-1">
-            <span className="text-gray-500">Firmware</span>
-            <span className="text-gray-700">{router.firmware}</span>
+        {primaryLan && (
+          <div className="font-mono text-xs text-gray-800">
+            {primaryLan.ipAddress}/{primaryLan.cidr}
           </div>
         )}
       </div>
       
-      {/* Interfaces */}
-      <div className="px-4 py-2 border-b border-gray-100">
-        <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-          Interfaces
-        </div>
-        <div className="space-y-1">
-          {router.interfaces.slice(0, 4).map((iface) => (
-            <div 
-              key={iface.id}
-              className="flex items-center justify-between text-sm"
-            >
-              <div className="flex items-center gap-2">
-                {iface.type === 'wan' ? (
-                  <Globe className="w-3 h-3 text-blue-500" />
-                ) : (
-                  <Network className="w-3 h-3 text-green-500" />
-                )}
-                <span className="text-gray-600">{iface.name}</span>
-              </div>
-              <span className="text-gray-800 font-mono text-xs">
-                {iface.ipAddress}/{iface.cidr}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Tunnels Summary */}
-      {tunnelCount > 0 && (
-        <div className="px-4 py-2">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-            VPN Tunnels
-          </div>
-          <div className="space-y-1">
-            {router.tunnels.slice(0, 3).map((tunnel) => (
-              <div 
-                key={tunnel.id}
-                className="flex items-center justify-between text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <Wifi className="w-3 h-3 text-orange-500" />
-                  <span className="text-gray-600 truncate max-w-[120px]">
-                    {tunnel.name || `Tunnel ${tunnel.id}`}
-                  </span>
-                </div>
-                <span className={cn(
-                  'text-xs px-1.5 py-0.5 rounded',
-                  tunnel.enabled 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-500'
-                )}>
-                  {tunnel.enabled ? 'Active' : 'Disabled'}
-                </span>
-              </div>
-            ))}
-            {tunnelCount > 3 && (
-              <div className="text-xs text-gray-400 text-center">
-                +{tunnelCount - 3} more tunnels
-              </div>
-            )}
-          </div>
+      {/* Footer - WAN IP */}
+      {wanInterface && (
+        <div 
+          className="px-3 py-1.5 rounded-b-md font-mono text-xs text-white text-center"
+          style={{ backgroundColor: COLORS.wanIp }}
+        >
+          {wanInterface.ipAddress}/{wanInterface.cidr}
         </div>
       )}
       
       {/* Bottom handles for LAN connections */}
-      {lanInterfaces.map((iface, i) => (
+      {lanInterfaces.slice(0, 3).map((iface, i) => (
         <Handle
           key={iface.id}
           type="source"
           position={Position.Bottom}
           id={iface.id}
-          className="!bg-green-500 !w-3 !h-3"
+          className="!w-2.5 !h-2.5 !border-0"
           style={{ 
-            left: `${((i + 1) / (lanInterfaces.length + 1)) * 100}%` 
+            left: `${((i + 1) / (Math.min(lanInterfaces.length, 3) + 1)) * 100}%`,
+            backgroundColor: COLORS.lanNetwork
           }}
         />
       ))}

@@ -7,14 +7,19 @@ import {
   EdgeLabelRenderer,
   BaseEdge 
 } from 'reactflow';
-import type { WanEdgeData } from '@/types';
 import { cn } from '@/lib/utils';
 import { Globe } from 'lucide-react';
 
-// Design spec: yellow edge with red IP labels
-const WAN_COLOR = '#ffd400';
+export interface InternetEdgeData {
+  publicIp?: string;
+  isp?: string;
+  type?: 'fiber' | 'dsl' | 'cable' | 'wireless' | 'leased';
+}
 
-function WanEdgeComponent({
+// Design spec: thin yellow line for internet
+const INTERNET_COLOR = '#ffd400';
+
+function InternetEdgeComponent({
   id,
   sourceX,
   sourceY,
@@ -24,7 +29,7 @@ function WanEdgeComponent({
   targetPosition,
   data,
   selected,
-}: EdgeProps<WanEdgeData>) {
+}: EdgeProps<InternetEdgeData>) {
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -41,8 +46,8 @@ function WanEdgeComponent({
         id={id}
         path={edgePath}
         style={{
-          stroke: WAN_COLOR,
-          strokeWidth: selected ? 4 : 3,
+          stroke: INTERNET_COLOR,
+          strokeWidth: selected ? 3 : 2,
         }}
       />
       
@@ -74,4 +79,4 @@ function WanEdgeComponent({
   );
 }
 
-export const WanEdge = memo(WanEdgeComponent);
+export const InternetEdge = memo(InternetEdgeComponent);

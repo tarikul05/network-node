@@ -12,25 +12,22 @@ function InternetNodeComponent({ data, selected }: NodeProps<InternetNodeData>) 
   return (
     <div
       className={cn(
-        'bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg',
-        'min-w-[180px] text-white',
-        'transition-all duration-200',
-        selected && 'ring-2 ring-blue-300 ring-offset-2'
+        'rounded-lg shadow-lg transition-all duration-200',
+        'w-[240px] h-[120px]',
+        'bg-gradient-to-br from-purple-500 to-indigo-600',
+        selected && 'ring-2 ring-white ring-offset-2 ring-offset-[#0a3a5f]'
       )}
     >
       {/* Content */}
-      <div className="px-5 py-4 text-center">
-        <div className="flex justify-center mb-2">
-          <div className="p-3 bg-white/20 rounded-full">
-            <Cloud className="w-8 h-8" />
-          </div>
+      <div className="h-full flex flex-col items-center justify-center text-white px-4">
+        <div className="p-3 bg-white/20 rounded-full mb-2">
+          <Globe className="w-8 h-8" />
         </div>
-        <h3 className="font-semibold text-lg">{label || 'Internet'}</h3>
+        <h3 className="font-bold text-lg">{label || 'Internet'}</h3>
         {gateway && (
-          <div className="mt-2 flex items-center justify-center gap-1 text-blue-100 text-sm">
-            <Globe className="w-3 h-3" />
-            <span className="font-mono">{gateway}</span>
-          </div>
+          <p className="font-mono text-sm mt-1 bg-white/20 px-3 py-1 rounded-full">
+            {gateway}
+          </p>
         )}
       </div>
       
@@ -39,7 +36,7 @@ function InternetNodeComponent({ data, selected }: NodeProps<InternetNodeData>) 
         type="source"
         position={Position.Bottom}
         id="wan"
-        className="!bg-white !w-4 !h-4 !border-2 !border-blue-500"
+        className="!bg-white !w-4 !h-4 !border-2 !border-purple-500"
       />
     </div>
   );

@@ -7,14 +7,18 @@ import {
   EdgeLabelRenderer,
   BaseEdge 
 } from 'reactflow';
-import type { WanEdgeData } from '@/types';
 import { cn } from '@/lib/utils';
-import { Globe } from 'lucide-react';
 
-// Design spec: yellow edge with red IP labels
-const WAN_COLOR = '#ffd400';
+export interface BackboneEdgeData {
+  label?: string;
+  bandwidth?: string;
+  isRedundant?: boolean;
+}
 
-function WanEdgeComponent({
+// Design spec: thick yellow line for backbone
+const BACKBONE_COLOR = '#ffd400';
+
+function BackboneEdgeComponent({
   id,
   sourceX,
   sourceY,
@@ -24,7 +28,7 @@ function WanEdgeComponent({
   targetPosition,
   data,
   selected,
-}: EdgeProps<WanEdgeData>) {
+}: EdgeProps<BackboneEdgeData>) {
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -32,21 +36,34 @@ function WanEdgeComponent({
     targetX,
     targetY,
     targetPosition,
-    borderRadius: 16,
+    borderRadius: 10,
   });
 
   return (
     <>
+      {/* Shadow/glow effect */}
+      <BaseEdge
+        id={`${id}-glow`}
+        path={edgePath}
+        style={{
+          stroke: BACKBONE_COLOR,
+          strokeWidth: selected ? 8 : 6,
+          strokeOpacity: 0.3,
+          filter: 'blur(4px)',
+        }}
+      />
+      
+      {/* Main edge */}
       <BaseEdge
         id={id}
         path={edgePath}
         style={{
-          stroke: WAN_COLOR,
-          strokeWidth: selected ? 4 : 3,
+          stroke: BACKBONE_COLOR,
+          strokeWidth: selected ? 5 : 4,
         }}
       />
       
-      {data?.publicIp && (
+      {data?.label && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -59,13 +76,14 @@ function WanEdgeComponent({
             <div
               className={cn(
                 'px-2 py-1 rounded text-xs font-medium shadow-md',
-                'flex items-center gap-1',
-                'bg-red-600 text-white border border-red-400',
-                selected && 'ring-2 ring-red-400'
+                'bg-yellow-900 text-yellow-100 border border-yellow-600',
+                selected && 'ring-2 ring-yellow-400'
               )}
             >
-              <Globe className="w-3 h-3" />
-              <span className="font-mono">{data.publicIp}</span>
+              {data.label}
+              {data.bandwidth && (
+                <span className="ml-1 text-yellow-300">({data.bandwidth})</span>
+              )}
             </div>
           </div>
         </EdgeLabelRenderer>
@@ -74,4 +92,4 @@ function WanEdgeComponent({
   );
 }
 
-export const WanEdge = memo(WanEdgeComponent);
+export const BackboneEdge = memo(BackboneEdgeComponent);

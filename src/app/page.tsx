@@ -14,6 +14,10 @@ import { RouterDetailPanel } from '@/components/panels/RouterDetailPanel';
 import { useTopologyStore, useUIStore } from '@/store';
 import { cn } from '@/lib/utils';
 
+// Design spec colors
+const CANVAS_BG = '#0a3a5f';
+const SITE_BLUE = '#1e88c8';
+
 export default function Home() {
   const [showUploader, setShowUploader] = useState(true);
   const { routers, clearAll } = useTopologyStore();
@@ -28,18 +32,21 @@ export default function Home() {
   const hasTopology = routers.length > 0;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col" style={{ backgroundColor: CANVAS_BG }}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <header 
+        className="px-4 py-3 flex items-center justify-between border-b"
+        style={{ backgroundColor: SITE_BLUE, borderColor: 'rgba(255,255,255,0.1)' }}
+      >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-lg">
+          <div className="p-2 bg-white/20 rounded-lg">
             <Network className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-white">
               Network Topology Viewer
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-white/70">
               Visualize router configurations
             </p>
           </div>
@@ -52,8 +59,8 @@ export default function Home() {
             className={cn(
               'p-2 rounded-lg transition-colors',
               showMinimap 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-400 hover:bg-gray-100'
+                ? 'bg-white/30 text-white' 
+                : 'text-white/60 hover:bg-white/10'
             )}
             title="Toggle Minimap"
           >
@@ -65,15 +72,15 @@ export default function Home() {
             className={cn(
               'p-2 rounded-lg transition-colors',
               showGrid 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'text-gray-400 hover:bg-gray-100'
+                ? 'bg-white/30 text-white' 
+                : 'text-white/60 hover:bg-white/10'
             )}
             title="Toggle Grid"
           >
             <Grid3X3 className="w-5 h-5" />
           </button>
           
-          <div className="w-px h-6 bg-gray-200 mx-2" />
+          <div className="w-px h-6 bg-white/20 mx-2" />
           
           {/* Upload toggle */}
           <button
@@ -81,8 +88,8 @@ export default function Home() {
             className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
               showUploader
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-white text-blue-600'
+                : 'bg-white/20 text-white hover:bg-white/30'
             )}
           >
             <Upload className="w-4 h-4" />
@@ -97,7 +104,7 @@ export default function Home() {
                   clearAll();
                 }
               }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               Clear
@@ -110,10 +117,13 @@ export default function Home() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left sidebar - Upload panel */}
         {showUploader && (
-          <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-900">Configuration Files</h2>
-              <p className="text-xs text-gray-500 mt-1">
+          <aside 
+            className="w-80 flex flex-col border-r"
+            style={{ backgroundColor: 'rgba(30, 136, 200, 0.3)', borderColor: 'rgba(255,255,255,0.1)' }}
+          >
+            <div className="p-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+              <h2 className="font-semibold text-white">Configuration Files</h2>
+              <p className="text-xs text-white/60 mt-1">
                 Upload router config files to build topology
               </p>
             </div>
@@ -127,20 +137,23 @@ export default function Home() {
         <main className="flex-1 flex flex-col">
           {/* Stats bar */}
           {hasTopology && (
-            <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center gap-6">
+            <div 
+              className="px-4 py-2 flex items-center gap-6 border-b"
+              style={{ backgroundColor: 'rgba(30, 136, 200, 0.5)', borderColor: 'rgba(255,255,255,0.1)' }}
+            >
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Routers:</span>
-                <span className="font-semibold text-gray-900">{routers.length}</span>
+                <span className="text-white/70">Routers:</span>
+                <span className="font-semibold text-white">{routers.length}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Tunnels:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="text-white/70">Tunnels:</span>
+                <span className="font-semibold text-white">
                   {routers.reduce((sum, r) => sum + r.tunnels.length, 0)}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-gray-500">Interfaces:</span>
-                <span className="font-semibold text-gray-900">
+                <span className="text-white/70">Interfaces:</span>
+                <span className="font-semibold text-white">
                   {routers.reduce((sum, r) => sum + r.interfaces.length, 0)}
                 </span>
               </div>
@@ -155,7 +168,10 @@ export default function Home() {
         
         {/* Right sidebar - Detail panel */}
         {selectedRouterId && (
-          <aside className="w-96">
+          <aside 
+            className="w-96 border-l"
+            style={{ backgroundColor: 'rgba(30, 136, 200, 0.3)', borderColor: 'rgba(255,255,255,0.1)' }}
+          >
             <RouterDetailPanel />
           </aside>
         )}

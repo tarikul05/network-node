@@ -74,25 +74,25 @@ export function ConfigUploader() {
           'transition-colors duration-200',
           'flex flex-col items-center justify-center gap-4',
           isDragging
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+            ? 'border-yellow-400 bg-yellow-400/10'
+            : 'border-white/30 hover:border-white/50 bg-white/5'
         )}
       >
         <div className={cn(
           'p-4 rounded-full',
-          isDragging ? 'bg-blue-100' : 'bg-gray-100'
+          isDragging ? 'bg-yellow-400/20' : 'bg-white/10'
         )}>
           <Upload className={cn(
             'w-8 h-8',
-            isDragging ? 'text-blue-500' : 'text-gray-400'
+            isDragging ? 'text-yellow-400' : 'text-white/60'
           )} />
         </div>
         
         <div className="text-center">
-          <p className="text-gray-700 font-medium">
+          <p className="text-white font-medium">
             Drop router config files here
           </p>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-white/60 text-sm mt-1">
             or click to browse
           </p>
         </div>
@@ -107,14 +107,14 @@ export function ConfigUploader() {
           />
           <span className={cn(
             'px-4 py-2 rounded-md text-sm font-medium',
-            'bg-white border border-gray-300 text-gray-700',
-            'hover:bg-gray-50 transition-colors'
+            'bg-white/10 border border-white/30 text-white',
+            'hover:bg-white/20 transition-colors'
           )}>
             Browse Files
           </span>
         </label>
 
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-white/40">
           Supports: Yamaha RTX (.txt, .cfg)
         </p>
       </div>
@@ -122,7 +122,7 @@ export function ConfigUploader() {
       {/* Uploaded files list */}
       {configFiles.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700">
+          <h3 className="text-sm font-medium text-white">
             Uploaded Configs ({configFiles.length})
           </h3>
           <div className="space-y-2">
@@ -131,37 +131,37 @@ export function ConfigUploader() {
                 key={file.id}
                 className={cn(
                   'flex items-center gap-3 p-3 rounded-lg',
-                  'bg-white border',
+                  'border',
                   file.parseResult?.success
-                    ? 'border-green-200'
+                    ? 'bg-green-500/10 border-green-500/30'
                     : file.parseResult
-                    ? 'border-red-200'
-                    : 'border-gray-200'
+                    ? 'bg-red-500/10 border-red-500/30'
+                    : 'bg-white/5 border-white/20'
                 )}
               >
                 <div className={cn(
                   'p-2 rounded-lg',
                   file.parseResult?.success
-                    ? 'bg-green-100'
+                    ? 'bg-green-500/20'
                     : file.parseResult
-                    ? 'bg-red-100'
-                    : 'bg-gray-100'
+                    ? 'bg-red-500/20'
+                    : 'bg-white/10'
                 )}>
                   <FileText className={cn(
                     'w-5 h-5',
                     file.parseResult?.success
-                      ? 'text-green-600'
+                      ? 'text-green-400'
                       : file.parseResult
-                      ? 'text-red-600'
-                      : 'text-gray-500'
+                      ? 'text-red-400'
+                      : 'text-white/60'
                   )} />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-white truncate">
                     {file.name}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-white/60">
                     <span>{formatBytes(file.size)}</span>
                     {file.parseResult?.router && (
                       <>
@@ -175,16 +175,16 @@ export function ConfigUploader() {
                 {file.parseResult && (
                   <div className="flex items-center gap-2">
                     {file.parseResult.success ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-green-400" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className="w-5 h-5 text-red-400" />
                     )}
                   </div>
                 )}
 
                 <button
                   onClick={() => removeConfigFile(file.id)}
-                  className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                  className="p-1 text-white/40 hover:text-white rounded"
                 >
                   <X className="w-4 h-4" />
                 </button>

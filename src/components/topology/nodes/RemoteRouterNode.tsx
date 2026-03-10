@@ -4,7 +4,17 @@ import { memo } from 'react';
 import { Handle, Position, type NodeProps } from 'reactflow';
 import type { RemoteRouterNodeData } from '@/types';
 import { cn } from '@/lib/utils';
-import { Server, Upload, Globe } from 'lucide-react';
+import { Server, Upload, Globe, HelpCircle } from 'lucide-react';
+
+// Design spec colors (same as RouterNode)
+const COLORS = {
+  router: '#f2c94c',      // Yellow router
+  routerDark: '#d4a62a',  // Darker yellow for borders
+  wanIp: '#ff6b6b',       // Red for WAN IP
+  unknown: '#9ca3af',     // Gray for unknown devices
+  unknownDark: '#6b7280', // Darker gray
+  tunnel: '#f97316',      // Orange for tunnels
+};
 
 function RemoteRouterNodeComponent({ data, selected }: NodeProps<RemoteRouterNodeData>) {
   const { peer, tunnelName } = data;
@@ -12,79 +22,79 @@ function RemoteRouterNodeComponent({ data, selected }: NodeProps<RemoteRouterNod
   return (
     <div
       className={cn(
-        'bg-white rounded-lg shadow-md min-w-[200px]',
+        'rounded-lg shadow-lg transition-all duration-200',
+        'w-[160px]',
         'border-2 border-dashed',
-        'transition-all duration-200',
-        selected ? 'border-blue-500 shadow-blue-200' : 'border-gray-300'
+        selected && 'ring-2 ring-white ring-offset-2 ring-offset-[#0a3a5f]'
       )}
+      style={{ 
+        backgroundColor: COLORS.unknown,
+        borderColor: COLORS.unknownDark
+      }}
     >
       {/* Top handle for tunnel connection */}
       <Handle
         type="target"
         position={Position.Top}
         id="tunnel"
-        className="!bg-orange-500 !w-3 !h-3"
+        className="!w-2.5 !h-2.5 !border-0"
+        style={{ backgroundColor: COLORS.tunnel }}
       />
       
       {/* Header */}
-      <div className="px-4 py-3 border-b border-dashed border-gray-200 bg-gray-50/50 rounded-t-lg">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <Server className="w-5 h-5 text-gray-500" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-gray-700 truncate">
-              {tunnelName || 'Remote Router'}
-            </h3>
-            <p className="text-xs text-gray-400">Unknown Device</p>
-          </div>
+      <div className="px-3 py-2 border-b border-gray-500/30">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-gray-700" />
+          <h3 className="font-bold text-gray-900 text-sm truncate">
+            {tunnelName || 'Remote'}
+          </h3>
         </div>
       </div>
       
-      {/* Content */}
-      <div className="px-4 py-3 space-y-2">
-        <div className="flex items-center gap-2 text-sm">
-          <Globe className="w-4 h-4 text-blue-500" />
-          <span className="text-gray-500">Public IP:</span>
-          <span className="font-mono text-gray-700">{peer.publicIp}</span>
+      {/* Body */}
+      <div className="px-3 py-2 space-y-1">
+        <div className="text-xs font-medium text-gray-700">
+          Unknown Device
         </div>
-        
-        {peer.targetNetworks.length > 0 && (
-          <div className="text-sm">
-            <span className="text-gray-500">Networks:</span>
-            <div className="mt-1 space-y-1">
-              {peer.targetNetworks.map((network, i) => (
-                <div 
-                  key={i}
-                  className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600"
-                >
-                  {network}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Upload prompt */}
-        <button
-          className={cn(
-            'w-full mt-2 py-2 px-3 rounded-md text-sm',
-            'bg-blue-50 text-blue-600 hover:bg-blue-100',
-            'flex items-center justify-center gap-2',
-            'transition-colors'
-          )}
-        >
-          <Upload className="w-4 h-4" />
-          Upload Config
-        </button>
+        <div className="font-mono text-xs text-gray-800">
+          {peer.publicIp}
+        </div>
       </div>
+      
+      {/* Target networks */}
+      {peer.targetNetworks.length > 0 && (
+        <div 
+          className="px-3 py-1.5 bg-gray-600/30 text-xs text-gray-800"
+        >
+          {peer.targetNetworks.slice(0, 2).map((net, i) => (
+            <div key={i} className="font-mono truncate">{net}</div>
+          ))}
+          {peer.targetNetworks.length > 2 && (
+            <div className="text-gray-600">+{peer.targetNetworks.length - 2} more</div>
+          )}
+        </div>
+      )}
+      
+      {/* Upload button */}
+      <button
+        className={cn(
+          'w-full py-1.5 px-3 rounded-b-md text-xs',
+          'bg-blue-500 text-white hover:bg-blue-600',
+          'flex items-center justify-center gap-1',
+          'transition-colors'
+        )}
+      >
+        <Upload className="w-3 h-3" />
+        Upload Config
+      </button>
       
       {/* Bottom handle for potential LAN */}
       <Handle
         type="source"
         position={Position.Bottom}
         id="lan"
-        className="!bg-green-500 !w-3 !h-3 !opacity-50"
+        className="!w-2.5 !h-2.5 !border-0 !opacity-50"
+        style={{ backgroundColor: '#22c55e' }}
       />
     </div>
   );

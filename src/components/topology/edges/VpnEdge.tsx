@@ -3,19 +3,26 @@
 import { memo } from 'react';
 import { 
   EdgeProps, 
-  getBezierPath, 
+  getBezierPath,
   EdgeLabelRenderer,
   BaseEdge 
 } from 'reactflow';
-import type { TunnelEdgeData } from '@/types';
 import { cn } from '@/lib/utils';
 import { Lock } from 'lucide-react';
 
-// Design spec: dashed line for VPN tunnels
-const TUNNEL_COLOR_ENABLED = '#f97316';  // Orange
-const TUNNEL_COLOR_DISABLED = '#6b7280'; // Gray
+export interface VpnEdgeData {
+  tunnelName?: string;
+  localIp?: string;
+  remoteIp?: string;
+  encryption?: string;
+  enabled?: boolean;
+}
 
-function TunnelEdgeComponent({
+// Design spec: dashed line for VPN tunnels
+const VPN_COLOR_ENABLED = '#f97316';  // Orange
+const VPN_COLOR_DISABLED = '#6b7280'; // Gray
+
+function VpnEdgeComponent({
   id,
   sourceX,
   sourceY,
@@ -25,7 +32,7 @@ function TunnelEdgeComponent({
   targetPosition,
   data,
   selected,
-}: EdgeProps<TunnelEdgeData>) {
+}: EdgeProps<VpnEdgeData>) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -36,7 +43,7 @@ function TunnelEdgeComponent({
   });
 
   const isEnabled = data?.enabled ?? true;
-  const color = isEnabled ? TUNNEL_COLOR_ENABLED : TUNNEL_COLOR_DISABLED;
+  const color = isEnabled ? VPN_COLOR_ENABLED : VPN_COLOR_DISABLED;
 
   return (
     <>
@@ -78,4 +85,4 @@ function TunnelEdgeComponent({
   );
 }
 
-export const TunnelEdge = memo(TunnelEdgeComponent);
+export const VpnEdge = memo(VpnEdgeComponent);
